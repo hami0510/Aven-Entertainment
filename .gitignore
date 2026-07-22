@@ -3,5 +3,5 @@ __pycache__/
 .venv/
 venv/
 .streamlit/secrets.toml
-data/aven.db
+data/aiven.db
 .DS_Store
