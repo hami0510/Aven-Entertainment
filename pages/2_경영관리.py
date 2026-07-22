@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import date
 import db
 from style import apply_style, page_header, sidebar_brand
+from security import delete_button
 
 st.set_page_config(page_title="경영관리", page_icon="💼", layout="wide")
 db.init_db()
@@ -73,15 +74,10 @@ with tab_budget:
             budget["item_date"] + " · " + budget["item_name"] + " · " + budget["amount"].astype(str) + "원 (ID:" + budget["id"].astype(str) + ")",
             budget["id"]
         ))
-        c1, c2 = st.columns([3, 1])
-        with c1:
-            del_pick = st.selectbox("삭제할 항목 선택", list(del_map.keys()), key="del_budget_pick")
-        with c2:
-            confirm_del = st.checkbox("삭제 확인", key="confirm_del_budget")
-        if st.button("🗑 선택한 항목 삭제", type="secondary", disabled=not confirm_del):
-            db.delete_row("budget_items", int(del_map[del_pick]))
-            st.success(f"'{del_pick}' 항목을 삭제했습니다.")
-            st.rerun()
+        del_pick = st.selectbox("삭제할 항목 선택", list(del_map.keys()), key="del_budget_pick")
+        delete_button(
+            "🗑 선택한 항목 삭제", "budget_items", int(del_map[del_pick]), del_pick, key="del_budget_btn"
+        )
 
 # ================= 계약 =================
 with tab_contract:
@@ -130,15 +126,10 @@ with tab_contract:
             contracts["party_name"] + " · " + contracts["contract_type"] + " (ID:" + contracts["id"].astype(str) + ")",
             contracts["id"]
         ))
-        c1, c2 = st.columns([3, 1])
-        with c1:
-            del_pick = st.selectbox("삭제할 계약 선택", list(del_map.keys()), key="del_contract_pick")
-        with c2:
-            confirm_del = st.checkbox("삭제 확인", key="confirm_del_contract")
-        if st.button("🗑 선택한 계약 삭제", type="secondary", disabled=not confirm_del):
-            db.delete_row("contracts", int(del_map[del_pick]))
-            st.success(f"'{del_pick}' 계약을 삭제했습니다.")
-            st.rerun()
+        del_pick = st.selectbox("삭제할 계약 선택", list(del_map.keys()), key="del_contract_pick")
+        delete_button(
+            "🗑 선택한 계약 삭제", "contracts", int(del_map[del_pick]), del_pick, key="del_contract_btn"
+        )
 
 # ================= 일정 =================
 with tab_schedule:
@@ -183,15 +174,10 @@ with tab_schedule:
             schedule["event_date"] + " · " + schedule["title"] + " (ID:" + schedule["id"].astype(str) + ")",
             schedule["id"]
         ))
-        c1, c2 = st.columns([3, 1])
-        with c1:
-            del_pick = st.selectbox("삭제할 일정 선택", list(del_map.keys()), key="del_schedule_pick")
-        with c2:
-            confirm_del = st.checkbox("삭제 확인", key="confirm_del_schedule")
-        if st.button("🗑 선택한 일정 삭제", type="secondary", disabled=not confirm_del):
-            db.delete_row("schedule_events", int(del_map[del_pick]))
-            st.success(f"'{del_pick}' 일정을 삭제했습니다.")
-            st.rerun()
+        del_pick = st.selectbox("삭제할 일정 선택", list(del_map.keys()), key="del_schedule_pick")
+        delete_button(
+            "🗑 선택한 일정 삭제", "schedule_events", int(del_map[del_pick]), del_pick, key="del_schedule_btn"
+        )
 
 # ================= 공연 관리 =================
 with tab_performance:
@@ -283,15 +269,10 @@ with tab_performance:
             performances["event_date"] + " · " + performances["title"] + " (" + performances["artist_name"] + ") (ID:" + performances["id"].astype(str) + ")",
             performances["id"]
         ))
-        c1, c2 = st.columns([3, 1])
-        with c1:
-            del_pick = st.selectbox("삭제할 공연 선택", list(del_map.keys()), key="del_performance_pick")
-        with c2:
-            confirm_del = st.checkbox("삭제 확인", key="confirm_del_performance")
-        if st.button("🗑 선택한 공연 삭제", type="secondary", disabled=not confirm_del):
-            db.delete_row("performances", int(del_map[del_pick]))
-            st.success(f"'{del_pick}' 공연을 삭제했습니다.")
-            st.rerun()
+        del_pick = st.selectbox("삭제할 공연 선택", list(del_map.keys()), key="del_performance_pick")
+        delete_button(
+            "🗑 선택한 공연 삭제", "performances", int(del_map[del_pick]), del_pick, key="del_performance_btn"
+        )
 
 # ================= 정산 관리 =================
 with tab_settlement:
@@ -403,12 +384,7 @@ with tab_settlement:
             settlements["settlement_date"].astype(str) + " · " + settlements["performance_title"].fillna("(공연 삭제됨)") + " (ID:" + settlements["id"].astype(str) + ")",
             settlements["id"]
         ))
-        c1, c2 = st.columns([3, 1])
-        with c1:
-            del_pick = st.selectbox("삭제할 정산 선택", list(del_map.keys()), key="del_settlement_pick")
-        with c2:
-            confirm_del = st.checkbox("삭제 확인", key="confirm_del_settlement")
-        if st.button("🗑 선택한 정산 삭제", type="secondary", disabled=not confirm_del):
-            db.delete_row("settlements", int(del_map[del_pick]))
-            st.success(f"'{del_pick}' 정산 내역을 삭제했습니다.")
-            st.rerun()
+        del_pick = st.selectbox("삭제할 정산 선택", list(del_map.keys()), key="del_settlement_pick")
+        delete_button(
+            "🗑 선택한 정산 삭제", "settlements", int(del_map[del_pick]), del_pick, key="del_settlement_btn"
+        )
