@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import date
 import db
 from style import apply_style, page_header, sidebar_brand
+from security import delete_button
 
 st.set_page_config(page_title="연습생 관리", page_icon="👥", layout="wide")
 db.init_db()
@@ -40,16 +41,10 @@ with tab1:
         st.subheader("🗑 연습생 삭제")
         del_map = dict(zip(filtered["name"] + " (ID:" + filtered["id"].astype(str) + ")", filtered["id"]))
         if del_map:
-            c1, c2 = st.columns([3, 1])
-            with c1:
-                del_pick = st.selectbox("삭제할 연습생 선택", list(del_map.keys()), key="del_trainee_pick")
-            with c2:
-                confirm_del = st.checkbox("삭제 확인", key="confirm_del_trainee")
-            if st.button("🗑 선택한 연습생 삭제", type="secondary", disabled=not confirm_del):
-                del_id = int(del_map[del_pick])
-                db.delete_row("trainees", del_id)
-                st.success(f"'{del_pick}' 연습생을 삭제했습니다.")
-                st.rerun()
+            del_pick = st.selectbox("삭제할 연습생 선택", list(del_map.keys()), key="del_trainee_pick")
+            delete_button(
+                "🗑 선택한 연습생 삭제", "trainees", int(del_map[del_pick]), del_pick, key="del_trainee_btn"
+            )
 
 # ---------------- 등록 ----------------
 with tab2:
