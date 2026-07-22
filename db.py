@@ -153,6 +153,24 @@ def init_db():
         )
     """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS artists (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            group_name TEXT,
+            part TEXT,
+            birth_date TEXT,
+            gender TEXT,
+            debut_date TEXT,
+            status TEXT DEFAULT '활동중',
+            phone TEXT,
+            sns_instagram TEXT,
+            trainee_id INTEGER,
+            memo TEXT,
+            FOREIGN KEY (trainee_id) REFERENCES trainees(id) ON DELETE SET NULL
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -341,3 +359,23 @@ def get_settlements():
 
 def update_settlement_status(settlement_id, status):
     execute("UPDATE settlements SET settlement_status = ? WHERE id = ?", (status, settlement_id))
+
+
+# ---------- Artists (소속가수) ----------
+def add_artist(data: dict):
+    return execute(
+        """INSERT INTO artists
+        (name, group_name, part, birth_date, gender, debut_date, status, phone, sns_instagram, trainee_id, memo)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        (data["name"], data["group_name"], data["part"], data["birth_date"], data["gender"],
+         data["debut_date"], data["status"], data["phone"], data["sns_instagram"],
+         data.get("trainee_id"), data["memo"])
+    )
+
+
+def get_artists():
+    return run_query("SELECT * FROM artists ORDER BY id DESC")
+
+
+def update_artist_status(artist_id, status):
+    execute("UPDATE artists SET status = ? WHERE id = ?", (status, artist_id))
