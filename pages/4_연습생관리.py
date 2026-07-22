@@ -11,8 +11,6 @@ sidebar_brand()
 
 page_header("👥", "연습생 육성·관리", "등록, 목록 관리, 평가 및 성장 추이")
 
-st.title("👥 연습생 육성·관리")
-
 tab1, tab2, tab3 = st.tabs(["연습생 목록", "연습생 등록", "평가 기록"])
 
 # ---------------- 목록 ----------------
@@ -39,12 +37,18 @@ with tab1:
         )
 
         st.markdown("---")
-        st.subheader("연습생 삭제")
-        del_id = st.number_input("삭제할 연습생 ID", min_value=0, step=1, key="del_trainee")
-        if st.button("삭제", type="secondary"):
-            if del_id > 0:
+        st.subheader("🗑 연습생 삭제")
+        del_map = dict(zip(filtered["name"] + " (ID:" + filtered["id"].astype(str) + ")", filtered["id"]))
+        if del_map:
+            c1, c2 = st.columns([3, 1])
+            with c1:
+                del_pick = st.selectbox("삭제할 연습생 선택", list(del_map.keys()), key="del_trainee_pick")
+            with c2:
+                confirm_del = st.checkbox("삭제 확인", key="confirm_del_trainee")
+            if st.button("🗑 선택한 연습생 삭제", type="secondary", disabled=not confirm_del):
+                del_id = int(del_map[del_pick])
                 db.delete_row("trainees", del_id)
-                st.success(f"ID {del_id} 연습생을 삭제했습니다.")
+                st.success(f"'{del_pick}' 연습생을 삭제했습니다.")
                 st.rerun()
 
 # ---------------- 등록 ----------------
