@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import date
 import db
 from style import apply_style, page_header, sidebar_brand
+from security import delete_button
 
 st.set_page_config(page_title="보고서/회의록", page_icon="📝", layout="wide")
 db.init_db()
@@ -23,10 +24,10 @@ with tab1:
                 st.markdown(f"**참석자**: {row['attendees']}")
                 st.markdown(f"**상세 내용**\n\n{row['content']}")
                 st.markdown("---")
-                if st.button("🗑 이 회의록 삭제", key=f"del_note_{row['id']}"):
-                    db.delete_row("meeting_notes", int(row["id"]))
-                    st.success("회의록을 삭제했습니다.")
-                    st.rerun()
+                delete_button(
+                    "🗑 이 회의록 삭제", "meeting_notes", int(row["id"]),
+                    f"{row['meeting_date']} · {row['title']}", key=f"del_note_{row['id']}"
+                )
 
 with tab2:
     st.subheader("신규 회의록 작성")
