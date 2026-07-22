@@ -66,6 +66,23 @@ with tab_budget:
 
     st.caption("⚠️ 본 내역은 참고용 관리 도구입니다. 실제 세무 신고·회계 처리는 반드시 세무사 확인을 거쳐주세요.")
 
+    if not budget.empty:
+        st.markdown("---")
+        st.subheader("🗑 예산 항목 삭제")
+        del_map = dict(zip(
+            budget["item_date"] + " · " + budget["item_name"] + " · " + budget["amount"].astype(str) + "원 (ID:" + budget["id"].astype(str) + ")",
+            budget["id"]
+        ))
+        c1, c2 = st.columns([3, 1])
+        with c1:
+            del_pick = st.selectbox("삭제할 항목 선택", list(del_map.keys()), key="del_budget_pick")
+        with c2:
+            confirm_del = st.checkbox("삭제 확인", key="confirm_del_budget")
+        if st.button("🗑 선택한 항목 삭제", type="secondary", disabled=not confirm_del):
+            db.delete_row("budget_items", int(del_map[del_pick]))
+            st.success(f"'{del_pick}' 항목을 삭제했습니다.")
+            st.rerun()
+
 # ================= 계약 =================
 with tab_contract:
     st.subheader("계약 현황")
@@ -106,6 +123,23 @@ with tab_contract:
 
     st.caption("⚠️ 이 시스템에서 작성하는 계약 정보는 관리용 초안/기록입니다. 법적 효력이 필요한 최종 계약서는 반드시 변호사 등 법률 전문가의 검토를 거쳐야 합니다.")
 
+    if not contracts.empty:
+        st.markdown("---")
+        st.subheader("🗑 계약 삭제")
+        del_map = dict(zip(
+            contracts["party_name"] + " · " + contracts["contract_type"] + " (ID:" + contracts["id"].astype(str) + ")",
+            contracts["id"]
+        ))
+        c1, c2 = st.columns([3, 1])
+        with c1:
+            del_pick = st.selectbox("삭제할 계약 선택", list(del_map.keys()), key="del_contract_pick")
+        with c2:
+            confirm_del = st.checkbox("삭제 확인", key="confirm_del_contract")
+        if st.button("🗑 선택한 계약 삭제", type="secondary", disabled=not confirm_del):
+            db.delete_row("contracts", int(del_map[del_pick]))
+            st.success(f"'{del_pick}' 계약을 삭제했습니다.")
+            st.rerun()
+
 # ================= 일정 =================
 with tab_schedule:
     st.subheader("전사 일정")
@@ -140,6 +174,23 @@ with tab_schedule:
                 "owner": owner, "memo": memo
             })
             st.success("일정이 추가되었습니다.")
+            st.rerun()
+
+    if not schedule.empty:
+        st.markdown("---")
+        st.subheader("🗑 일정 삭제")
+        del_map = dict(zip(
+            schedule["event_date"] + " · " + schedule["title"] + " (ID:" + schedule["id"].astype(str) + ")",
+            schedule["id"]
+        ))
+        c1, c2 = st.columns([3, 1])
+        with c1:
+            del_pick = st.selectbox("삭제할 일정 선택", list(del_map.keys()), key="del_schedule_pick")
+        with c2:
+            confirm_del = st.checkbox("삭제 확인", key="confirm_del_schedule")
+        if st.button("🗑 선택한 일정 삭제", type="secondary", disabled=not confirm_del):
+            db.delete_row("schedule_events", int(del_map[del_pick]))
+            st.success(f"'{del_pick}' 일정을 삭제했습니다.")
             st.rerun()
 
 # ================= 공연 관리 =================
@@ -224,6 +275,23 @@ with tab_performance:
                 })
                 st.success("공연이 등록되었습니다.")
                 st.rerun()
+
+    if not performances.empty:
+        st.markdown("---")
+        st.subheader("🗑 공연 삭제")
+        del_map = dict(zip(
+            performances["event_date"] + " · " + performances["title"] + " (" + performances["artist_name"] + ") (ID:" + performances["id"].astype(str) + ")",
+            performances["id"]
+        ))
+        c1, c2 = st.columns([3, 1])
+        with c1:
+            del_pick = st.selectbox("삭제할 공연 선택", list(del_map.keys()), key="del_performance_pick")
+        with c2:
+            confirm_del = st.checkbox("삭제 확인", key="confirm_del_performance")
+        if st.button("🗑 선택한 공연 삭제", type="secondary", disabled=not confirm_del):
+            db.delete_row("performances", int(del_map[del_pick]))
+            st.success(f"'{del_pick}' 공연을 삭제했습니다.")
+            st.rerun()
 
 # ================= 정산 관리 =================
 with tab_settlement:
@@ -327,3 +395,20 @@ with tab_settlement:
                 st.rerun()
 
     st.caption("⚠️ 본 정산 내역은 관리·기록용 도구입니다. 실제 세금계산서 발행, 원천징수, 세무 신고는 세무사 확인을 거쳐주세요.")
+
+    if not settlements.empty:
+        st.markdown("---")
+        st.subheader("🗑 정산 삭제")
+        del_map = dict(zip(
+            settlements["settlement_date"].astype(str) + " · " + settlements["performance_title"].fillna("(공연 삭제됨)") + " (ID:" + settlements["id"].astype(str) + ")",
+            settlements["id"]
+        ))
+        c1, c2 = st.columns([3, 1])
+        with c1:
+            del_pick = st.selectbox("삭제할 정산 선택", list(del_map.keys()), key="del_settlement_pick")
+        with c2:
+            confirm_del = st.checkbox("삭제 확인", key="confirm_del_settlement")
+        if st.button("🗑 선택한 정산 삭제", type="secondary", disabled=not confirm_del):
+            db.delete_row("settlements", int(del_map[del_pick]))
+            st.success(f"'{del_pick}' 정산 내역을 삭제했습니다.")
+            st.rerun()
