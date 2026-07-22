@@ -1,5 +1,5 @@
 """
-Aven Entertainment 관리 시스템 - 데이터베이스 레이어
+Aiven Entertainment 관리 시스템 - 데이터베이스 레이어
 SQLite 기반. 앱 최초 실행 시 자동으로 테이블을 생성합니다.
 """
 import sqlite3
@@ -7,7 +7,7 @@ import os
 from datetime import date
 import pandas as pd
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "data", "aven.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "data", "aiven.db")
 
 
 def get_conn():
