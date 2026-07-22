@@ -2,6 +2,7 @@
 Aiven Entertainment 관리 시스템 - 데이터베이스 레이어
 Streamlit Secrets에 DB_URL(PostgreSQL/Supabase)이 있으면 영구 DB를 사용하고,
 없으면 로컬 SQLite(data/aven.db)로 동작합니다. 앱 최초 실행 시 테이블을 자동 생성합니다.
+조회 결과는 캐시되어 페이지 전환이 빠르며, 데이터 추가/수정/삭제 시 캐시가 즉시 갱신됩니다.
 """
 import os
 import pandas as pd
@@ -10,11 +11,14 @@ from sqlalchemy import create_engine, text
 try:
     import streamlit as st
     _DB_URL = st.secrets.get("DB_URL", None)
+    _HAS_ST = True
 except Exception:
+    st = None
     _DB_URL = None
+    _HAS_ST = False
 
 if _DB_URL:
-    engine = create_engine(_DB_URL, pool_pre_ping=True)
+    engine = create_engine(_DB_URL, pool_pre_ping=True, pool_size=5, max_overflow=5)
     IS_PG = True
 else:
     _base = os.path.dirname(__file__)
@@ -153,25 +157,48 @@ def init_db():
     _initialized = True
 
 
+# ---------- 조회 캐시 ----------
+def _query_db(sql, params_items):
+    with engine.connect() as conn:
+        return pd.read_sql_query(text(sql), conn, params=dict(params_items))
+
+
+if _HAS_ST:
+    _cached_query = st.cache_data(ttl=120, show_spinner=False)(_query_db)
+else:
+    _cached_query = _query_db
+
+
+def _clear_cache():
+    if _HAS_ST:
+        try:
+            _cached_query.clear()
+        except Exception:
+            pass
+
+
 # ---------- 공통 유틸 ----------
 def run_query(sql, params=None):
-    with engine.connect() as conn:
-        return pd.read_sql_query(text(sql), conn, params=params or {})
+    params = params or {}
+    return _cached_query(sql, tuple(sorted(params.items())))
 
 
 def execute(sql, params=None):
     with engine.begin() as conn:
         conn.execute(text(sql), params or {})
+    _clear_cache()
 
 
 def insert_returning_id(sql, params):
     if IS_PG:
         with engine.begin() as conn:
-            return conn.execute(text(sql + " RETURNING id"), params).scalar()
+            new_id = conn.execute(text(sql + " RETURNING id"), params).scalar()
     else:
         with engine.begin() as conn:
             res = conn.execute(text(sql), params)
-            return res.lastrowid
+            new_id = res.lastrowid
+    _clear_cache()
+    return new_id
 
 
 def delete_row(table, row_id):
