@@ -2,10 +2,14 @@ import streamlit as st
 import pandas as pd
 from datetime import date, time
 import db
+from style import apply_style, page_header, sidebar_brand
 
 st.set_page_config(page_title="트레이닝 스케줄", page_icon="📅", layout="wide")
 db.init_db()
+apply_style()
+sidebar_brand()
 
+page_header("📅", "트레이닝 스케줄 관리", "세션 등록 및 일정 조회")
 st.title("📅 트레이닝 스케줄 관리")
 
 tab1, tab2 = st.tabs(["스케줄 목록", "세션 등록"])
