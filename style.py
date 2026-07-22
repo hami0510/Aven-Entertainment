@@ -53,16 +53,16 @@ def apply_style():
         }}
 
         /* ---------- 헤더 ---------- */
-        .aiven-header {{
+        .aven-header {{
             display: flex; align-items: center; gap: 14px;
             padding: 20px 24px;
             border-radius: 10px;
             background: {INK};
             color: white; margin-bottom: 24px;
         }}
-        .aiven-header .icon {{ font-size: 26px; line-height: 1; }}
-        .aiven-header .title {{ font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 0.2px; }}
-        .aiven-header .subtitle {{ font-size: 12.5px; color: #B8B8B8; margin: 3px 0 0 0; }}
+        .aven-header .icon {{ font-size: 26px; line-height: 1; }}
+        .aven-header .title {{ font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 0.2px; }}
+        .aven-header .subtitle {{ font-size: 12.5px; color: #B8B8B8; margin: 3px 0 0 0; }}
 
         /* ---------- KPI 카드 ---------- */
         .kpi-grid {{
@@ -103,7 +103,7 @@ def apply_style():
             text-transform: uppercase; letter-spacing: 0.4px;
         }}
 
-        .aiven-badge {{
+        .aven-badge {{
             display: inline-block; padding: 2px 10px; border-radius: 999px;
             font-size: 11px; font-weight: 700;
         }}
@@ -132,7 +132,7 @@ def apply_style():
 
 def page_header(icon: str, title: str, subtitle: str = ""):
     html = (
-        '<div class="aiven-header">'
+        '<div class="aven-header">'
         f'<div class="icon">{icon}</div>'
         '<div>'
         f'<p class="title">{title}</p>'
@@ -167,11 +167,6 @@ def section_title(icon: str, text: str):
 
 
 def sidebar_brand():
-    html = (
-        '<div style="padding: 18px 4px 22px 4px;">'
-        f'<div style="font-size:23px; font-weight:900; letter-spacing:1px; color:{INK}; font-family:\'Inter\',sans-serif;">AIVEN</div>'
-        f'<div style="width:26px; height:2px; background:{INK}; margin:5px 0 7px 0;"></div>'
-        f'<div style="font-size:10px; font-weight:700; letter-spacing:2.2px; color:{MUTED}; text-transform:uppercase;">Entertainment</div>'
-        '</div>'
-    )
-    st.sidebar.markdown(html, unsafe_allow_html=True)
+    st.sidebar.markdown('<div style="padding: 18px 0 10px 0;">', unsafe_allow_html=True)
+    st.sidebar.image("assets/logo.png", width=150)
+    st.sidebar.markdown('</div>', unsafe_allow_html=True)
