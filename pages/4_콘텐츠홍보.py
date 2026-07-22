@@ -2,10 +2,14 @@ import streamlit as st
 import pandas as pd
 from datetime import date
 import db
+from style import apply_style, page_header, sidebar_brand
 
 st.set_page_config(page_title="콘텐츠·홍보", page_icon="📢", layout="wide")
 db.init_db()
+apply_style()
+sidebar_brand()
 
+page_header("📢", "콘텐츠·홍보 기획 관리", "채널별 콘텐츠 캘린더 관리")
 st.title("📢 콘텐츠·홍보 기획 관리")
 
 tab1, tab2 = st.tabs(["콘텐츠 캘린더", "콘텐츠 등록"])
