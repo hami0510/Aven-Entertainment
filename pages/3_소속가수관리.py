@@ -54,25 +54,34 @@ with tab1:
 
         st.markdown("---")
         section_title("🔄", "상태 변경")
+        status_map = dict(zip(
+            filtered["name"] + " (ID:" + filtered["id"].astype(str) + ")", filtered["id"]
+        ))
         c1, c2 = st.columns(2)
         with c1:
-            target_id = st.number_input("소속가수 ID", min_value=0, step=1, key="artist_status_id")
+            status_pick = st.selectbox("소속가수 선택", list(status_map.keys()), key="artist_status_pick")
         with c2:
             new_status = st.selectbox("변경할 상태", ["활동중", "휴식", "계약종료", "탈퇴"], key="artist_status_new")
         if st.button("상태 변경 적용"):
-            if target_id > 0:
-                db.update_artist_status(int(target_id), new_status)
-                st.success(f"ID {target_id} 소속가수 상태를 '{new_status}'로 변경했습니다.")
-                st.rerun()
+            db.update_artist_status(int(status_map[status_pick]), new_status)
+            st.success(f"'{status_pick}' 상태를 '{new_status}'로 변경했습니다.")
+            st.rerun()
 
         st.markdown("---")
         section_title("🗑", "소속가수 삭제")
-        del_id = st.number_input("삭제할 소속가수 ID", min_value=0, step=1, key="del_artist")
-        if st.button("삭제", type="secondary"):
-            if del_id > 0:
-                db.delete_row("artists", del_id)
-                st.success(f"ID {del_id} 소속가수를 삭제했습니다.")
-                st.rerun()
+        del_map = dict(zip(
+            filtered["name"] + " (ID:" + filtered["id"].astype(str) + ")", filtered["id"]
+        ))
+        c1, c2 = st.columns([3, 1])
+        with c1:
+            del_pick = st.selectbox("삭제할 소속가수 선택", list(del_map.keys()), key="del_artist_pick")
+        with c2:
+            confirm_del = st.checkbox("삭제 확인", key="confirm_del_artist")
+        if st.button("🗑 선택한 소속가수 삭제", type="secondary", disabled=not confirm_del):
+            del_id = int(del_map[del_pick])
+            db.delete_row("artists", del_id)
+            st.success(f"'{del_pick}' 소속가수를 삭제했습니다.")
+            st.rerun()
 
 # ---------------- 등록 ----------------
 with tab2:
