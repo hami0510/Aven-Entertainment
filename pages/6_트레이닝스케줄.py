@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import date, time
 import db
 from style import apply_style, page_header, sidebar_brand
+from security import delete_button
 
 st.set_page_config(page_title="트레이닝 스케줄", page_icon="📅", layout="wide")
 db.init_db()
@@ -49,16 +50,10 @@ with tab1:
             filtered["id"]
         ))
         if del_map:
-            c1, c2 = st.columns([3, 1])
-            with c1:
-                del_pick = st.selectbox("삭제할 세션 선택", list(del_map.keys()), key="del_session_pick")
-            with c2:
-                confirm_del = st.checkbox("삭제 확인", key="confirm_del_session")
-            if st.button("🗑 선택한 세션 삭제", disabled=not confirm_del):
-                del_id = int(del_map[del_pick])
-                db.delete_row("training_sessions", del_id)
-                st.success(f"'{del_pick}' 세션을 삭제했습니다.")
-                st.rerun()
+            del_pick = st.selectbox("삭제할 세션 선택", list(del_map.keys()), key="del_session_pick")
+            delete_button(
+                "🗑 선택한 세션 삭제", "training_sessions", int(del_map[del_pick]), del_pick, key="del_session_btn"
+            )
 
 with tab2:
     st.subheader("신규 트레이닝 세션 등록")
