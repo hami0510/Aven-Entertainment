@@ -24,8 +24,13 @@ else:
 
 _ID = "SERIAL PRIMARY KEY" if IS_PG else "INTEGER PRIMARY KEY AUTOINCREMENT"
 
+_initialized = False
+
 
 def init_db():
+    global _initialized
+    if _initialized:
+        return
     ddl = [
         f"""CREATE TABLE IF NOT EXISTS trainees (
             id {_ID},
@@ -145,6 +150,7 @@ def init_db():
     with engine.begin() as conn:
         for stmt in ddl:
             conn.execute(text(stmt))
+    _initialized = True
 
 
 # ---------- 공통 유틸 ----------
