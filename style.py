@@ -1,5 +1,5 @@
 """
-Aven Entertainment 관리 시스템 - 공통 스타일 모듈
+Aiven Entertainment 관리 시스템 - 공통 스타일 모듈
 브랜드 로고(블랙&화이트, 볼드 산세리프, 미니멀)를 기준으로 한 모노크롬 톤앤매너.
 모든 페이지 상단에서 apply_style() / page_header() / kpi_cards() 를 불러와 사용합니다.
 """
@@ -53,16 +53,16 @@ def apply_style():
         }}
 
         /* ---------- 헤더 ---------- */
-        .aven-header {{
+        .aiven-header {{
             display: flex; align-items: center; gap: 14px;
             padding: 20px 24px;
             border-radius: 10px;
             background: {INK};
             color: white; margin-bottom: 24px;
         }}
-        .aven-header .icon {{ font-size: 26px; line-height: 1; }}
-        .aven-header .title {{ font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 0.2px; }}
-        .aven-header .subtitle {{ font-size: 12.5px; color: #B8B8B8; margin: 3px 0 0 0; }}
+        .aiven-header .icon {{ font-size: 26px; line-height: 1; }}
+        .aiven-header .title {{ font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 0.2px; }}
+        .aiven-header .subtitle {{ font-size: 12.5px; color: #B8B8B8; margin: 3px 0 0 0; }}
 
         /* ---------- KPI 카드 ---------- */
         .kpi-grid {{
@@ -103,7 +103,7 @@ def apply_style():
             text-transform: uppercase; letter-spacing: 0.4px;
         }}
 
-        .aven-badge {{
+        .aiven-badge {{
             display: inline-block; padding: 2px 10px; border-radius: 999px;
             font-size: 11px; font-weight: 700;
         }}
@@ -132,7 +132,7 @@ def apply_style():
 
 def page_header(icon: str, title: str, subtitle: str = ""):
     html = (
-        '<div class="aven-header">'
+        '<div class="aiven-header">'
         f'<div class="icon">{icon}</div>'
         '<div>'
         f'<p class="title">{title}</p>'
@@ -169,7 +169,7 @@ def section_title(icon: str, text: str):
 def sidebar_brand():
     html = (
         '<div style="padding: 18px 4px 22px 4px;">'
-        f'<div style="font-size:23px; font-weight:900; letter-spacing:1px; color:{INK}; font-family:\'Inter\',sans-serif;">AVEN</div>'
+        f'<div style="font-size:23px; font-weight:900; letter-spacing:1px; color:{INK}; font-family:\'Inter\',sans-serif;">AIVEN</div>'
         f'<div style="width:26px; height:2px; background:{INK}; margin:5px 0 7px 0;"></div>'
         f'<div style="font-size:10px; font-weight:700; letter-spacing:2.2px; color:{MUTED}; text-transform:uppercase;">Entertainment</div>'
         '</div>'
