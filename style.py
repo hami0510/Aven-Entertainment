@@ -43,8 +43,13 @@ def apply_style():
         }}
         [data-testid="stSidebarNav"] li a[aria-current="page"] {{
             background-color: {INK} !important;
-            color: white !important;
             font-weight: 700;
+        }}
+        [data-testid="stSidebarNav"] li a[aria-current="page"],
+        [data-testid="stSidebarNav"] li a[aria-current="page"] span,
+        [data-testid="stSidebarNav"] li a[aria-current="page"] p,
+        [data-testid="stSidebarNav"] li a[aria-current="page"] * {{
+            color: #FFFFFF !important;
         }}
 
         /* ---------- 헤더 ---------- */
