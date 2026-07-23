@@ -125,9 +125,82 @@ def apply_style():
             background-color: #2B2B2B !important;
         }}
 
-        hr {{ border-color: {BORDER_SOFT} !important; }}
+      hr {{ border-color: {BORDER_SOFT} !important; }}
+
+        /* ---------- 캘린더 ---------- */
+        .cal-nav-title {{
+            text-align: center; font-weight: 800; font-size: 16px; color: {INK};
+            padding-top: 4px;
+        }}
+        .cal-grid {{
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 8px;
+        }}
+        .cal-head {{
+            text-align: center; font-size: 11.5px; font-weight: 700; color: {MUTED};
+            padding-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px;
+        }}
+        .cal-head-sun {{ color: {ALERT}; }}
+        .cal-cell {{
+            min-height: 78px;
+            border: 1px solid {BORDER_SOFT};
+            border-radius: 6px;
+            padding: 4px 5px;
+            background: white;
+        }}
+        .cal-empty {{ background: #FAFAFA; border-color: #F0F0F0; }}
+        .cal-today {{ border: 1.5px solid {INK}; background: #F7F7F7; }}
+        .cal-daynum {{ font-size: 11.5px; font-weight: 700; color: {INK}; margin-bottom: 3px; }}
+        .cal-daynum-sun {{ color: {ALERT}; }}
+        .cal-event {{
+            font-size: 10px; color: {INK}; background: #F0F0F0; border-radius: 4px;
+            padding: 1px 4px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap;
+        }}
+        .cal-more {{ font-size: 9.5px; color: {MUTED}; }}
     </style>
     """, unsafe_allow_html=True)
+
+
+def month_calendar(events_by_date: dict, year: int, month: int):
+    """
+    events_by_date: {'2026-07-23': [('🗓️', '제목1'), ('🎤', '제목2')], ...}
+    해당 월의 달력을 그리드 형태로 렌더링합니다.
+    """
+    import calendar as _cal
+    from datetime import date as _date
+
+    cal = _cal.Calendar(firstweekday=6)  # 일요일 시작
+    weeks = cal.monthdayscalendar(year, month)
+    days_kr = ["일", "월", "화", "수", "목", "금", "토"]
+
+    html = '<div class="cal-grid">'
+    for i, d in enumerate(days_kr):
+        cls = "cal-head cal-head-sun" if i == 0 else "cal-head"
+        html += f'<div class="{cls}">{d}</div>'
+
+    today = _date.today()
+    for week in weeks:
+        for i, day in enumerate(week):
+            if day == 0:
+                html += '<div class="cal-cell cal-empty"></div>'
+                continue
+            d_obj = _date(year, month, day)
+            is_today = d_obj == today
+            cell_cls = "cal-cell" + (" cal-today" if is_today else "")
+            num_cls = "cal-daynum" + (" cal-daynum-sun" if i == 0 else "")
+            evts = events_by_date.get(d_obj.isoformat(), [])
+            html += f'<div class="{cell_cls}"><div class="{num_cls}">{day}</div>'
+            for icon, title in evts[:3]:
+                short = title if len(title) <= 8 else title[:8] + "…"
+                html += f'<div class="cal-event">{icon} {short}</div>'
+            if len(evts) > 3:
+                html += f'<div class="cal-more">+{len(evts) - 3}건 더보기</div>'
+            html += '</div>'
+    html += '</div>'
+    st.markdown(html, unsafe_allow_html=True)
 
 
 def page_header(icon: str, title: str, subtitle: str = ""):
