@@ -52,13 +52,18 @@ upcoming_perf = len(performances[performances["status"].isin(["예정", "확정"
 pending_settle = len(settlements[settlements["settlement_status"] == "미정산"]) if not settlements.empty else 0
 
 kpi_cards([
-    {"label": "현재 연습생 수", "value": f"{active_trainees}명", "icon": "👥", "accent": "ink"},
-    {"label": "이번 주 트레이닝", "value": f"{upcoming_sessions}건", "icon": "📅", "accent": "ink"},
+    {"label": "현재 연습생 수", "value": f"{active_trainees}명", "icon": "👥", "accent": "ink",
+     "link": "연습생관리"},
+    {"label": "이번 주 트레이닝", "value": f"{upcoming_sessions}건", "icon": "📅", "accent": "ink",
+     "link": "트레이닝스케줄"},
     {"label": "누적 순수익", "value": f"{net:,.0f}원", "icon": "💰", "accent": "alert" if net < 0 else "ink",
-     "sub": f"수입 {income:,.0f} · 지출 {expense:,.0f}"},
-    {"label": "진행 중 계약", "value": f"{active_contracts}건", "icon": "📄", "accent": "ink"},
-    {"label": "예정 공연", "value": f"{upcoming_perf}건", "icon": "🎤", "accent": "ink"},
-    {"label": "미정산 건수", "value": f"{pending_settle}건", "icon": "🧾", "accent": "alert" if pending_settle > 0 else "ink"},
+     "sub": f"수입 {income:,.0f} · 지출 {expense:,.0f}", "link": "경영관리"},
+    {"label": "진행 중 계약", "value": f"{active_contracts}건", "icon": "📄", "accent": "ink",
+     "link": "경영관리"},
+    {"label": "예정 공연", "value": f"{upcoming_perf}건", "icon": "🎤", "accent": "ink",
+     "link": "경영관리"},
+    {"label": "미정산 건수", "value": f"{pending_settle}건", "icon": "🧾", "accent": "alert" if pending_settle > 0 else "ink",
+     "link": "경영관리"},
 ])
 
 st.markdown("<br>", unsafe_allow_html=True)
