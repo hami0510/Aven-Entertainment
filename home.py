@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import date, timedelta
 import db
-from style import apply_style, page_header, kpi_cards, section_title, sidebar_brand
+from style import apply_style, page_header, kpi_cards, section_title, sidebar_brand, month_calendar
 
 st.set_page_config(
     page_title="Aiven Entertainment 관리 시스템",
@@ -28,6 +28,7 @@ schedule = db.get_schedule_events()
 content = db.get_content_calendar()
 performances = db.get_performances()
 settlements = db.get_settlements()
+artists = db.get_artists()
 
 # ---------------- KPI 계산 ----------------
 active_trainees = len(trainees[trainees["status"] == "연습생"]) if not trainees.empty else 0
@@ -63,28 +64,98 @@ kpi_cards([
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-left, right = st.columns([1.3, 1])
+# ==================== 캘린더 ====================
+section_title("🗓️", "일정 캘린더")
+st.caption("경영관리의 일정·공연·트레이닝 세션을 한눈에 확인할 수 있습니다.")
 
-with left:
-    section_title("📅", "다가오는 일정")
-    if not schedule.empty:
-        upcoming_sched = schedule[schedule["event_date"] >= date.today().isoformat()].head(8)
-        if not upcoming_sched.empty:
-            st.dataframe(
-                upcoming_sched[["event_date", "title", "category", "owner"]].rename(
-                    columns={"event_date": "날짜", "title": "제목", "category": "구분", "owner": "담당"}
-                ),
-                use_container_width=True,
-                hide_index=True,
-            )
-        else:
-            st.caption("예정된 일정이 없습니다.")
+if "cal_year" not in st.session_state:
+    st.session_state.cal_year = date.today().year
+    st.session_state.cal_month = date.today().month
+
+nav1, nav2, nav3 = st.columns([1, 6, 1])
+with nav1:
+    if st.button("◀", key="cal_prev", use_container_width=True):
+        m = st.session_state.cal_month - 1
+        y = st.session_state.cal_year
+        if m < 1:
+            m, y = 12, y - 1
+        st.session_state.cal_month, st.session_state.cal_year = m, y
+        st.rerun()
+with nav3:
+    if st.button("▶", key="cal_next", use_container_width=True):
+        m = st.session_state.cal_month + 1
+        y = st.session_state.cal_year
+        if m > 12:
+            m, y = 1, y + 1
+        st.session_state.cal_month, st.session_state.cal_year = m, y
+        st.rerun()
+with nav2:
+    st.markdown(
+        f'<div class="cal-nav-title">{st.session_state.cal_year}년 {st.session_state.cal_month}월</div>',
+        unsafe_allow_html=True,
+    )
+
+# 캘린더용 이벤트 취합: 일정 + 공연 + 트레이닝 세션
+events_by_date = {}
+
+
+def _add_event(date_str, icon, title):
+    if not date_str:
+        return
+    events_by_date.setdefault(date_str, []).append((icon, title))
+
+
+if not schedule.empty:
+    for _, r in schedule.iterrows():
+        _add_event(r["event_date"], "🗓️", r["title"])
+
+if not performances.empty:
+    for _, r in performances.iterrows():
+        _add_event(r["event_date"], "🎤", r["title"])
+
+if not sessions.empty:
+    for _, r in sessions.iterrows():
+        _add_event(r["session_date"], "📅", r.get("category", "트레이닝"))
+
+month_calendar(events_by_date, st.session_state.cal_year, st.session_state.cal_month)
+
+if st.button("오늘로 이동", key="cal_today"):
+    st.session_state.cal_year = date.today().year
+    st.session_state.cal_month = date.today().month
+    st.rerun()
+
+st.markdown("---")
+
+# ==================== 소속가수 / 연습생 / 콘텐츠 3분할 ====================
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    section_title("🌟", "소속가수 현황")
+    if not artists.empty:
+        st.metric("전체 소속가수", f"{len(artists)}명")
+        status_counts = artists["status"].value_counts()
+        st.bar_chart(status_counts, color="#0D0D0D")
+        group_count = artists["group_name"].dropna().nunique()
+        st.caption(f"활동 그룹 수: {group_count}개")
     else:
-        st.caption("등록된 일정이 없습니다. '경영관리' 페이지에서 일정을 추가해보세요.")
+        st.caption("등록된 소속가수가 없습니다. '소속가수관리' 페이지에서 추가해보세요.")
 
+with col2:
+    section_title("👥", "연습생 현황")
+    if not trainees.empty:
+        st.metric("전체 연습생", f"{len(trainees)}명")
+        status_counts = trainees["status"].value_counts()
+        st.bar_chart(status_counts, color="#0D0D0D")
+        part_counts = trainees["part"].value_counts()
+        st.caption("파트별 인원")
+        st.dataframe(part_counts.rename("인원"), use_container_width=True)
+    else:
+        st.caption("등록된 연습생이 없습니다. '연습생관리' 페이지에서 추가해보세요.")
+
+with col3:
     section_title("📢", "콘텐츠 발행 예정")
     if not content.empty:
-        upcoming_content = content[content["content_date"] >= date.today().isoformat()].head(8)
+        upcoming_content = content[content["content_date"] >= date.today().isoformat()].head(6)
         if not upcoming_content.empty:
             st.dataframe(
                 upcoming_content[["content_date", "channel", "title", "status"]].rename(
@@ -95,19 +166,10 @@ with left:
             )
         else:
             st.caption("예정된 콘텐츠가 없습니다.")
+        st.caption("채널별 콘텐츠 수")
+        st.bar_chart(content["channel"].value_counts(), color="#0D0D0D")
     else:
-        st.caption("등록된 콘텐츠 계획이 없습니다. '콘텐츠·홍보' 페이지에서 추가해보세요.")
-
-with right:
-    section_title("👥", "연습생 현황")
-    if not trainees.empty:
-        status_counts = trainees["status"].value_counts()
-        st.bar_chart(status_counts, color="#0D0D0D")
-        st.caption("파트별 인원")
-        part_counts = trainees["part"].value_counts()
-        st.dataframe(part_counts.rename("인원"), use_container_width=True)
-    else:
-        st.caption("등록된 연습생이 없습니다. '연습생 관리' 페이지에서 추가해보세요.")
+        st.caption("등록된 콘텐츠 계획이 없습니다. '콘텐츠홍보' 페이지에서 추가해보세요.")
 
 st.markdown("---")
 st.caption(
