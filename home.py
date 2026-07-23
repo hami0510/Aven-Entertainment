@@ -178,7 +178,11 @@ for week in weeks:
             evts = events_by_date.get(d_obj.isoformat(), [])
             is_today = d_obj == today
             is_selected = st.session_state.get("selected_cal_date") == d_obj.isoformat()
-            label = f"{day}" + (f" · {len(evts)}건" if evts else "")
+            label = f"{day}"
+            if is_today:
+                label += " (Today)"
+            if evts:
+                label += f" · {len(evts)}건"
             btn_type = "primary" if is_selected else "secondary"
             btn_key = "cal_today_btn" if is_today else f"caldate_{d_obj.isoformat()}"
 
