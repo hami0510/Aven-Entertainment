@@ -178,13 +178,20 @@ for week in weeks:
             evts = events_by_date.get(d_obj.isoformat(), [])
             is_today = d_obj == today
             is_selected = st.session_state.get("selected_cal_date") == d_obj.isoformat()
-            label = f"{day}"
-            if is_today:
-                label += " (오늘)"
-            if evts:
-                label += f" · {len(evts)}건"
+            label = f"{day}" + (f" · {len(evts)}건" if evts else "")
             btn_type = "primary" if is_selected else "secondary"
-            if st.button(label, key=f"caldate_{d_obj.isoformat()}", use_container_width=True, type=btn_type):
+
+            if is_today:
+                with st.container(key="cal_today_wrap"):
+                    clicked = st.button(
+                        label, key=f"caldate_{d_obj.isoformat()}", use_container_width=True, type=btn_type
+                    )
+            else:
+                clicked = st.button(
+                    label, key=f"caldate_{d_obj.isoformat()}", use_container_width=True, type=btn_type
+                )
+
+            if clicked:
                 st.session_state.selected_cal_date = d_obj.isoformat()
                 st.rerun()
             if evts:
