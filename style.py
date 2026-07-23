@@ -162,8 +162,9 @@ def apply_style():
         .cal-more {{ font-size: 9.5px; color: {MUTED}; }}
     </style>
     """
-    # 마크다운이 들여쓰기+빈줄을 코드블록으로 오인하지 않도록 각 줄 앞 공백 제거
-    css = "\n".join(line.lstrip() for line in css.split("\n"))
+    # 줄바꿈이 있으면 마크다운이 코드블록/일반 텍스트로 오인할 수 있어
+    # 완전히 한 줄로 압축해서 렌더링합니다 (CSS는 줄바꿈과 무관하게 동작).
+    css = " ".join(line.strip() for line in css.split("\n") if line.strip())
     st.markdown(css, unsafe_allow_html=True)
 
 
