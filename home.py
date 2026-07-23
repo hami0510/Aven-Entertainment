@@ -66,7 +66,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 
 # ==================== 캘린더 ====================
 section_title("🗓️", "일정 캘린더")
-st.caption("경영관리의 일정·공연·트레이닝 세션을 한눈에 확인할 수 있습니다.")
+st.caption("경영관리의 일정·공연·트레이닝 세션과 생일·데뷔 기념일을 한눈에 확인할 수 있습니다.")
 
 if "cal_year" not in st.session_state:
     st.session_state.cal_year = date.today().year
@@ -117,6 +117,39 @@ if not sessions.empty:
     for _, r in sessions.iterrows():
         _add_event(r["session_date"], "📅", r.get("category", "트레이닝"))
 
+# 생일 / 데뷔 기념일 (매년 반복되므로, 캘린더에 표시 중인 연도에 맞춰 날짜를 다시 계산)
+_cal_year = st.session_state.cal_year
+
+
+def _add_yearly_event(month_day_source, icon, title):
+    """month_day_source: 'YYYY-MM-DD' 형식의 원본 날짜에서 월/일만 가져와 표시 중인 연도로 치환"""
+    if not month_day_source:
+        return
+    try:
+        d = date.fromisoformat(month_day_source)
+        key = date(_cal_year, d.month, d.day).isoformat()
+        _add_event(key, icon, title)
+    except (ValueError, TypeError):
+        pass  # 2/29 등 표시 연도에 존재하지 않는 날짜는 건너뜀
+
+
+if not trainees.empty:
+    for _, r in trainees.iterrows():
+        _add_yearly_event(r.get("birth_date"), "🎂", f"{r['name']} 생일")
+
+if not artists.empty:
+    for _, r in artists.iterrows():
+        _add_yearly_event(r.get("birth_date"), "🎂", f"{r['name']} 생일")
+        debut = r.get("debut_date")
+        if debut:
+            try:
+                years = _cal_year - date.fromisoformat(debut).year
+                label = f"{r['name']} 데뷔 {years}주년" if years > 0 else f"{r['name']} 데뷔일"
+            except (ValueError, TypeError):
+                label = f"{r['name']} 데뷔일"
+            _add_yearly_event(debut, "🎉", label)
+
+st.caption("🗓️ 일정 · 🎤 공연 · 📅 트레이닝 · 🎂 생일 · 🎉 데뷔 기념일")
 month_calendar(events_by_date, st.session_state.cal_year, st.session_state.cal_month)
 
 if st.button("오늘로 이동", key="cal_today"):
