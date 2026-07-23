@@ -33,7 +33,7 @@ for path in sorted(glob.glob(os.path.join(os.path.dirname(__file__), "pages", "*
     filename = os.path.splitext(os.path.basename(path))[0]
     # '3_경영관리' -> '경영관리'
     title = filename.split("_", 1)[-1] if "_" in filename else filename
-    nav_pages.append(st.Page(path, title=title, icon=ICONS.get(title)))
+    nav_pages.append(st.Page(path, title=title, icon=ICONS.get(title), url_path=title))
 
 pg = st.navigation(nav_pages)
 pg.run()
