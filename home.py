@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import date, time, timedelta
 import db
 from style import apply_style, page_header, kpi_cards, section_title, sidebar_brand
+from security import delete_button
 
 st.set_page_config(
     page_title="Aiven Entertainment 관리 시스템",
@@ -99,23 +100,25 @@ with nav2:
 events_by_date = {}
 
 
-def _add_event(date_str, icon, title):
+def _add_event(date_str, icon, title, table=None, row_id=None):
     if not date_str:
         return
-    events_by_date.setdefault(date_str, []).append((icon, title))
+    events_by_date.setdefault(date_str, []).append(
+        {"icon": icon, "title": title, "table": table, "id": row_id}
+    )
 
 
 if not schedule.empty:
     for _, r in schedule.iterrows():
-        _add_event(r["event_date"], "🗓️", r["title"])
+        _add_event(r["event_date"], "🗓️", r["title"], "schedule_events", int(r["id"]))
 
 if not performances.empty:
     for _, r in performances.iterrows():
-        _add_event(r["event_date"], "🎤", r["title"])
+        _add_event(r["event_date"], "🎤", r["title"], "performances", int(r["id"]))
 
 if not sessions.empty:
     for _, r in sessions.iterrows():
-        _add_event(r["session_date"], "📅", r.get("category", "트레이닝"))
+        _add_event(r["session_date"], "📅", r.get("category", "트레이닝"), "training_sessions", int(r["id"]))
 
 # 생일 / 데뷔 기념일 (매년 반복되므로, 캘린더에 표시 중인 연도에 맞춰 날짜를 다시 계산)
 _cal_year = st.session_state.cal_year
@@ -192,10 +195,10 @@ for week in weeks:
                 st.session_state.selected_cal_date = d_obj.isoformat()
                 st.rerun()
             if evts:
-                first_icon, first_title = evts[0]
-                short = first_title if len(first_title) <= 6 else first_title[:6] + "…"
+                first = evts[0]
+                short = first["title"] if len(first["title"]) <= 6 else first["title"][:6] + "…"
                 extra = f" 외{len(evts) - 1}건" if len(evts) > 1 else ""
-                st.caption(f"{first_icon} {short}{extra}")
+                st.caption(f"{first['icon']} {short}{extra}")
 
 if st.button("오늘로 이동", key="cal_today"):
     st.session_state.cal_year = date.today().year
@@ -211,8 +214,16 @@ if sel:
 
     evts = events_by_date.get(sel, [])
     if evts:
-        for icon, title in evts:
-            st.write(f"{icon} {title}")
+        for e in evts:
+            col_a, col_b = st.columns([5, 1])
+            with col_a:
+                st.write(f"{e['icon']} {e['title']}")
+            with col_b:
+                if e["table"] and e["id"] is not None:
+                    delete_button(
+                        "🗑 삭제", e["table"], int(e["id"]), e["title"],
+                        key=f"del_cal_{e['table']}_{e['id']}"
+                    )
     else:
         st.caption("이 날짜에 등록된 일정이 없습니다.")
 
