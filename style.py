@@ -178,15 +178,15 @@ def apply_style():
 
         hr {{ border-color: {BORDER_SOFT} !important; }}
 
-        /* 사이드바 내부 여백 압축 (스크롤 없이 다 보이도록) */
+        /* 사이드바 내부 여백 - 보기 좋은 균형 잡힌 간격 */
         [data-testid="stSidebarUserContent"] hr {{
-            margin: 6px 0 !important;
+            margin: 10px 0 !important;
         }}
         [data-testid="stSidebarUserContent"] [data-testid="stVerticalBlock"] {{
-            gap: 0.35rem !important;
+            gap: 0.55rem !important;
         }}
         [data-testid="stSidebarUserContent"] {{
-            padding-top: 0.5rem !important;
+            padding-top: 0.65rem !important;
         }}
 
         /* ---------- 캘린더 ---------- */
@@ -413,15 +413,15 @@ def sidebar_brand():
             today_items.append(("📅", r.get("category", "트레이닝")))
 
     today_html = (
-        '<div style="margin:6px 4px 2px 4px; padding:8px 10px; border:1px solid #E4E4E4; '
+        '<div style="margin:8px 4px 4px 4px; padding:9px 11px; border:1px solid #E4E4E4; '
         'border-radius:8px; background:#FCFCFC;">'
         '<div style="font-size:11px; font-weight:800; color:#767676; text-transform:uppercase; '
-        'margin-bottom:3px;">📌 오늘 일정</div>'
+        'margin-bottom:4px;">📌 오늘 일정</div>'
     )
     if today_items:
         for icon, title in today_items[:3]:
             short = title if len(title) <= 14 else title[:14] + "…"
-            today_html += f'<div style="font-size:12px; color:#0D0D0D; margin-bottom:1px;">{icon} {short}</div>'
+            today_html += f'<div style="font-size:12px; color:#0D0D0D; margin-bottom:2px;">{icon} {short}</div>'
         if len(today_items) > 3:
             today_html += f'<div style="font-size:11px; color:#ADADAD;">+{len(today_items) - 3}건 더</div>'
     else:
@@ -431,7 +431,7 @@ def sidebar_brand():
 
     # ---- 3. 빠른 검색 ----
     st.sidebar.markdown(
-        '<div style="margin:4px 4px 2px 4px; font-size:11px; font-weight:800; color:#767676; '
+        '<div style="margin:6px 4px 3px 4px; font-size:11px; font-weight:800; color:#767676; '
         'text-transform:uppercase;">🔍 빠른 검색</div>',
         unsafe_allow_html=True,
     )
@@ -456,18 +456,18 @@ def sidebar_brand():
             st.sidebar.caption("검색 결과가 없습니다.")
 
     # ---- SNS 계정 ----
-    html = '<div style="padding: 6px 4px 0 4px;">'
+    html = '<div style="padding: 8px 4px 0 4px;">'
     for account in SIDEBAR_ACCOUNTS:
         html += (
-            '<div style="margin-bottom:8px;">'
-            f'<div style="font-size:11px; font-weight:800; letter-spacing:0.4px; color:#767676; '
-            f'text-transform:uppercase; margin-bottom:4px;">{account["name"]}</div>'
-            '<div style="display:flex; gap:12px;">'
+            '<div style="margin-bottom:12px;">'
+            f'<div style="font-size:11.5px; font-weight:800; letter-spacing:0.4px; color:#767676; '
+            f'text-transform:uppercase; margin-bottom:5px;">{account["name"]}</div>'
+            '<div style="display:flex; gap:14px;">'
         )
         for link in account["links"]:
             html += (
                 f'<a href="{link["url"]}" target="_blank" title="{link["label"]}" '
-                'style="text-decoration:none; font-size:20px; line-height:1;">'
+                'style="text-decoration:none; font-size:22px; line-height:1;">'
                 f'{link["icon"]}</a>'
             )
         html += '</div></div>'
