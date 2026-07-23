@@ -4,6 +4,9 @@ Aiven Entertainment 관리 시스템 - 공통 스타일 모듈
 모든 페이지 상단에서 apply_style() / page_header() / kpi_cards() 를 불러와 사용합니다.
 """
 import streamlit as st
+import pandas as pd
+from datetime import date, timedelta
+import db
 
 INK = "#0D0D0D"
 MUTED = "#767676"
@@ -283,6 +286,106 @@ def section_title(icon: str, text: str):
 def sidebar_brand():
     st.logo("logo.png", size="large")
 
+    # ---- 배지/오늘 일정/검색에 쓸 데이터 조회 (캐시되어 있어 빠름) ----
+    try:
+        db.init_db()
+        trainees_sb = db.get_trainees()
+        artists_sb = db.get_artists()
+        contracts_sb = db.get_contracts()
+        settlements_sb = db.get_settlements()
+        schedule_sb = db.get_schedule_events()
+        performances_sb = db.get_performances()
+        sessions_sb = db.get_sessions()
+    except Exception:
+        empty = pd.DataFrame()
+        trainees_sb = artists_sb = contracts_sb = settlements_sb = empty
+        schedule_sb = performances_sb = sessions_sb = empty
+
+    today_iso = date.today().isoformat()
+    soon_iso = (date.today() + timedelta(days=30)).isoformat()
+
+    pending_settle_n = 0
+    if not settlements_sb.empty:
+        pending_settle_n = len(settlements_sb[settlements_sb["settlement_status"] == "미정산"])
+
+    expiring_contracts_n = 0
+    if not contracts_sb.empty:
+        expiring_contracts_n = len(contracts_sb[
+            (contracts_sb["status"] == "진행중")
+            & (contracts_sb["end_date"] >= today_iso)
+            & (contracts_sb["end_date"] <= soon_iso)
+        ])
+
+    # ---- 1. 알림 배지 ----
+    if pending_settle_n > 0 or expiring_contracts_n > 0:
+        badge_html = (
+            '<div style="margin:14px 4px 4px 4px; padding:10px 12px; border:1px solid #D64545; '
+            'border-radius:8px; background:#FDF2F2;">'
+            '<div style="font-size:11px; font-weight:800; color:#D64545; margin-bottom:4px;">⚠ 확인 필요</div>'
+        )
+        if pending_settle_n > 0:
+            badge_html += f'<div style="font-size:12px; color:#0D0D0D;">🧾 미정산 {pending_settle_n}건</div>'
+        if expiring_contracts_n > 0:
+            badge_html += f'<div style="font-size:12px; color:#0D0D0D;">📄 계약 만료 임박(30일 내) {expiring_contracts_n}건</div>'
+        badge_html += '</div>'
+        st.sidebar.markdown(badge_html, unsafe_allow_html=True)
+
+    # ---- 2. 오늘 일정 미리보기 ----
+    today_items = []
+    if not schedule_sb.empty:
+        for _, r in schedule_sb[schedule_sb["event_date"] == today_iso].iterrows():
+            today_items.append(("🗓️", r["title"]))
+    if not performances_sb.empty:
+        for _, r in performances_sb[performances_sb["event_date"] == today_iso].iterrows():
+            today_items.append(("🎤", r["title"]))
+    if not sessions_sb.empty:
+        for _, r in sessions_sb[sessions_sb["session_date"] == today_iso].iterrows():
+            today_items.append(("📅", r.get("category", "트레이닝")))
+
+    today_html = (
+        '<div style="margin:10px 4px 4px 4px; padding:10px 12px; border:1px solid #E4E4E4; '
+        'border-radius:8px; background:#FCFCFC;">'
+        '<div style="font-size:11px; font-weight:800; color:#767676; text-transform:uppercase; '
+        'margin-bottom:5px;">📌 오늘 일정</div>'
+    )
+    if today_items:
+        for icon, title in today_items[:3]:
+            short = title if len(title) <= 14 else title[:14] + "…"
+            today_html += f'<div style="font-size:12px; color:#0D0D0D; margin-bottom:2px;">{icon} {short}</div>'
+        if len(today_items) > 3:
+            today_html += f'<div style="font-size:11px; color:#ADADAD;">+{len(today_items) - 3}건 더</div>'
+    else:
+        today_html += '<div style="font-size:12px; color:#ADADAD;">오늘 일정 없음</div>'
+    today_html += '</div>'
+    st.sidebar.markdown(today_html, unsafe_allow_html=True)
+
+    # ---- 3. 빠른 검색 ----
+    st.sidebar.markdown(
+        '<div style="margin:12px 4px 2px 4px; font-size:11px; font-weight:800; color:#767676; '
+        'text-transform:uppercase;">🔍 빠른 검색</div>',
+        unsafe_allow_html=True,
+    )
+    query = st.sidebar.text_input(
+        "이름으로 검색", key="sidebar_quick_search", label_visibility="collapsed",
+        placeholder="연습생·소속가수 이름 검색"
+    )
+    if query:
+        results = []
+        if not trainees_sb.empty:
+            matched = trainees_sb[trainees_sb["name"].str.contains(query, case=False, na=False)]
+            for _, r in matched.iterrows():
+                results.append(("👤 연습생", r["name"], r["status"]))
+        if not artists_sb.empty:
+            matched = artists_sb[artists_sb["name"].str.contains(query, case=False, na=False)]
+            for _, r in matched.iterrows():
+                results.append(("🌟 소속가수", r["name"], r["status"]))
+        if results:
+            for tag, name, status in results[:6]:
+                st.sidebar.caption(f"{tag} · {name} ({status})")
+        else:
+            st.sidebar.caption("검색 결과가 없습니다.")
+
+    # ---- SNS 계정 ----
     html = '<div style="padding: 14px 4px 4px 4px;">'
     for account in SIDEBAR_ACCOUNTS:
         html += (
@@ -294,7 +397,7 @@ def sidebar_brand():
         for link in account["links"]:
             html += (
                 f'<a href="{link["url"]}" target="_blank" title="{link["label"]}" '
-                'style="text-decoration:none; font-size:20px; line-height:1;">'
+                'style="text-decoration:none; font-size:26px; line-height:1;">'
                 f'{link["icon"]}</a>'
             )
         html += '</div></div>'
@@ -302,3 +405,9 @@ def sidebar_brand():
 
     st.sidebar.markdown("---")
     st.sidebar.markdown(html, unsafe_allow_html=True)
+
+    # ---- 4. 데이터 새로고침 ----
+    st.sidebar.markdown("---")
+    if st.sidebar.button("🔄 데이터 새로고침", key="sidebar_refresh", use_container_width=True):
+        db.refresh_cache()
+        st.rerun()
