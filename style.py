@@ -294,7 +294,7 @@ def sidebar_brand():
         for link in account["links"]:
             html += (
                 f'<a href="{link["url"]}" target="_blank" title="{link["label"]}" '
-                'style="text-decoration:none; font-size:26px; line-height:1;">'
+                'style="text-decoration:none; font-size:20px; line-height:1;">'
                 f'{link["icon"]}</a>'
             )
         html += '</div></div>'
