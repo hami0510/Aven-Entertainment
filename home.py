@@ -158,45 +158,46 @@ cal_obj = _cal.Calendar(firstweekday=6)  # 일요일 시작
 weeks = cal_obj.monthdayscalendar(st.session_state.cal_year, st.session_state.cal_month)
 days_kr = ["일", "월", "화", "수", "목", "금", "토"]
 
-head_cols = st.columns(7)
-for i, d in enumerate(days_kr):
-    with head_cols[i]:
-        color = "color:#D64545;" if i == 0 else "color:#767676;"
-        st.markdown(
-            f"<div style='text-align:center;font-size:11.5px;font-weight:700;{color}'>{d}</div>",
-            unsafe_allow_html=True,
-        )
+with st.container(key="cal_grid_wrap"):
+    head_cols = st.columns(7)
+    for i, d in enumerate(days_kr):
+        with head_cols[i]:
+            color = "color:#D64545;" if i == 0 else "color:#767676;"
+            st.markdown(
+                f"<div style='text-align:center;font-size:11.5px;font-weight:700;{color}'>{d}</div>",
+                unsafe_allow_html=True,
+            )
 
-today = date.today()
-for week in weeks:
-    row_cols = st.columns(7)
-    for i, day in enumerate(week):
-        with row_cols[i]:
-            if day == 0:
-                st.write("")
-                continue
-            d_obj = date(st.session_state.cal_year, st.session_state.cal_month, day)
-            evts = events_by_date.get(d_obj.isoformat(), [])
-            is_today = d_obj == today
-            is_selected = st.session_state.get("selected_cal_date") == d_obj.isoformat()
-            label = f"{day}"
-            if is_today:
-                label += " (Today)"
-            if evts:
-                label += f" · {len(evts)}건"
-            btn_type = "primary" if is_selected else "secondary"
-            btn_key = "cal_today_btn" if is_today else f"caldate_{d_obj.isoformat()}"
+    today = date.today()
+    for week in weeks:
+        row_cols = st.columns(7)
+        for i, day in enumerate(week):
+            with row_cols[i]:
+                if day == 0:
+                    st.write("")
+                    continue
+                d_obj = date(st.session_state.cal_year, st.session_state.cal_month, day)
+                evts = events_by_date.get(d_obj.isoformat(), [])
+                is_today = d_obj == today
+                is_selected = st.session_state.get("selected_cal_date") == d_obj.isoformat()
+                label = f"{day}"
+                if is_today:
+                    label += " (Today)"
+                if evts:
+                    label += f" · {len(evts)}건"
+                btn_type = "primary" if is_selected else "secondary"
+                btn_key = "cal_today_btn" if is_today else f"caldate_{d_obj.isoformat()}"
 
-            clicked = st.button(label, key=btn_key, use_container_width=True, type=btn_type)
+                clicked = st.button(label, key=btn_key, use_container_width=True, type=btn_type)
 
-            if clicked:
-                st.session_state.selected_cal_date = d_obj.isoformat()
-                st.rerun()
-            if evts:
-                first = evts[0]
-                short = first["title"] if len(first["title"]) <= 6 else first["title"][:6] + "…"
-                extra = f" 외{len(evts) - 1}건" if len(evts) > 1 else ""
-                st.caption(f"{first['icon']} {short}{extra}")
+                if clicked:
+                    st.session_state.selected_cal_date = d_obj.isoformat()
+                    st.rerun()
+                if evts:
+                    first = evts[0]
+                    short = first["title"] if len(first["title"]) <= 6 else first["title"][:6] + "…"
+                    extra = f" 외{len(evts) - 1}건" if len(evts) > 1 else ""
+                    st.caption(f"{first['icon']} {short}{extra}")
 
 if st.button("오늘로 이동", key="cal_today"):
     st.session_state.cal_year = date.today().year
